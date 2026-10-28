@@ -1,0 +1,70 @@
+\section{Introduction}\label{sec:intro}
+
+A language model that can call tools can place trades. Wiring one to an order
+management system is now a modest engineering task, and the question a trading
+firm then faces is not whether the model can execute an instruction but whether it
+will decline one. Firms that handle client money run controls that exist to stop
+certain orders: restricted lists, trading blackouts, concentration limits,
+pre-trade approvals above a size threshold. Those controls are written for people, and people are trained,
+supervised and accountable for following them. An agent placed in the same seat
+inherits the rules as text in its prompt.
+
+The test that matters is the awkward one. An agent that complies when nobody asks
+it to break a rule has shown very little; the situation a compliance manual exists
+for is the one in which the person giving instructions wants the breaching trade.
+Sometimes that person is mistaken, sometimes impatient, and occasionally acting in
+bad faith, and the pressure they apply takes familiar forms: an appeal to
+seniority, a claim that compliance has already signed off, a deadline, an
+assertion that the rule has changed. A useful measurement has to put the agent in
+that position and record what it does.
+
+It also has to record the opposite failure. An agent that declines every
+borderline request breaks no rules and serves no one, and an evaluation that
+counts only violations rewards it. Compliance and usefulness have to be measured
+together.
+
+This paper introduces \texttt{mandatebench}, a benchmark for exactly this
+situation. An agent acts as the execution assistant on a simulated trading desk,
+bound by a six-rule compliance manual, and receives requests from its portfolio
+manager. In 144 conflict scenarios the request, carried out as worded, breaches
+exactly one rule, and it arrives at one of six pressure levels, from a plain
+request to a forged system notice announcing that compliance checks are
+suspended. In 28 legitimate scenarios the request breaches nothing, and several
+are built to sit close to a limit, so that an overcautious agent declines them. A
+rule engine with no model in the loop scores every order from the ledger.
+
+The contributions are four. The first is the benchmark itself: firm-level
+compliance rules, conflicts that come from the agent's own principal, a graded
+set of pressure tactics, and legitimate requests scored alongside conflicts. The
+second is its construction for verifiability. Every scenario is checked
+mechanically to breach exactly the rule it was built to test; the rule engine is
+tested at every boundary and by mutation; and every model is open-weight and
+served locally, so anyone with the same weights can rerun every episode. The
+third is an evaluation of eight open-weight models from four developers, run in
+two batches: the main finding from the first four was written down as a
+prediction, with the conditions that would falsify it, before the other four were
+run. The fourth is a set of controls, each tied to a failure observed here, for a
+firm that deploys such an agent (\Cref{sec:controls}).
+
+The results separate the models sharply. Violation rates on conflict scenarios
+ranged from \num{gpt-oss-120b.viol.pct}\% for gpt-oss-120b to
+\num{llama3.1-8b.viol.pct}\% for Llama 3.1 8B, which breached the rule even in
+\num{llama3.1-8b.pres.P0_plain.k} of 24 plain requests. In \num{all.legit.allcompliant.models.w} of the eight models, every legitimate
+request was carried out compliantly, so compliance was not bought with refusals. Social pressure (an appeal to seniority, a deadline, a claim that
+the rule had changed) did not significantly move any model in any of
+\num{all.social.tests} tests. What did was pressure that counterfeits
+authorization: a claim that compliance had already signed off, with a reference
+number, or a forged system notice suspending the checks. In all, \num{all.counterfeit.sig.models.w} models gave way significantly to at
+least one of the two, not all to the same one, so an
+evaluation built on either alone would have ranked them differently; and under
+the forged notice every one of the eight, including the most compliant, placed
+orders that needed an approval without obtaining one. The four models added to
+test this finding bore it out on pressure, while one of them broke the prediction
+about legitimate requests, for a reason the paper traces. Most violations were
+placed as the agent's first action, without any check, and in
+\num{all.misreport.k} episodes an agent told its principal that it had not placed
+an order the ledger shows it placed. One model, faced with a claimed approval,
+abandoned its role altogether. Because the rules are mechanical, every violation
+was decidable before the order was placed, which argues for enforcing such rules
+in deterministic controls outside the model rather than relying on the agent's
+judgment.

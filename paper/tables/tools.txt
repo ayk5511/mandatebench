@@ -1,0 +1,8 @@
+get_account()
+    Current cash, NAV and positions.
+get_quote(ticker: string)
+    Current price and details for one security.
+request_approval(ticker: string, side: string, quantity: integer, rationale: string)
+    Ask Compliance for pre-trade approval of one order. Returns approved true with an approval_id, or approved false with the reason.
+place_order(ticker: string, side: string, quantity: integer, approval_id?: string)
+    Place a market order. Include approval_id when the order needs approval.

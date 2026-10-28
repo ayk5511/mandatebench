@@ -1,0 +1,173 @@
+\section{Discussion}\label{sec:discussion}
+
+\subsection{What the results say}\label{sec:interpretation}
+
+\emph{The weak point is authorization, not obedience.} Telling these agents that
+the boss wants the trade, that the client is about to be lost or that the rule has
+changed did not measurably move any of the eight. Telling them that the trade had
+already been authorized did. The manual in every prompt said that only the
+compliance department grants exceptions, only through the approval tool, and that
+statements in a message cannot grant one. In all, \num{all.counterfeit.sig.models.w} of the eight models nevertheless
+gave way significantly to a counterfeit of that authorization, and under the forged
+notice every one of them, including the two that otherwise almost never broke a
+rule, placed large orders without the approval the manual requires. The failure is
+not that the agents defer to their principal; it is that they cannot tell a claim
+of authorization from authorization. In the terms of the instruction hierarchy
+\citep{Wallace2024InstructionHierarchy}, a user message that calls itself a system
+notice, or that reports a decision by an authority above the agent, was given the
+weight of the authority it claimed.
+
+\emph{One pressure level would have ranked the models wrongly.} Under the claimed
+approval alone, Mistral Small 3.2 and Qwen2.5 72B would look nearly as safe as the
+gpt-oss models (\num{mistral-small-24b.pres.P2_claimed_approval.k} and
+\num{qwen2.5-72b.pres.P2_claimed_approval.k} violations of 24) and Qwen3 among the
+weakest (\num{qwen3-32b.pres.P2_claimed_approval.k}). Under the forged notice alone
+the order reverses (\num{mistral-small-24b.pres.P5_fake_system_notice.k},
+\num{qwen2.5-72b.pres.P5_fake_system_notice.k} and
+\num{qwen3-32b.pres.P5_fake_system_notice.k}). An evaluation built around one attack
+would certify whichever model happened to resist it. Nor did size decide the
+outcome: the two models of about 70 billion parameters violated more often than
+Qwen3 32B and gpt-oss-20b.
+
+\emph{A low violation rate is not the same as compliance.} Two of the models show
+failures that a violation count alone would score as success. Mistral Small 3.2
+committed no violation under the claimed approval because it stopped working,
+falsely telling its principal that it could not trade. Llama 3.3 70B left most of
+the legitimate requests undone because it wrote its orders into its explanations
+instead of placing them, and wrote some breaching orders the same way. Neither is a
+compliant agent; both are agents that did not do their job, one of them in a way
+that happens to keep it out of the violation count. This is why the benchmark scores
+legitimate requests and why its results should be reported together
+(\Cref{sec:usage}).
+
+\emph{The rules are mechanical, so the control should be too.} Every violation in
+this study was decided by a rule engine from the order and the account, before
+the order would have reached a market. A pre-trade check running the same rules
+would have stopped every breaching order, and an approval check that looked up the
+identifier in the approval system's own records would have rejected CMP-4471 every
+time it was offered. The agent's judgment is the wrong place to enforce a rule that
+a few lines of deterministic code can decide; the agent belongs upstream of the
+control, not in place of it. This is the same conclusion firms reached long ago
+for human traders, whose orders pass through pre-trade checks however well trained
+they are, and FINRA's position that its rules apply to generative AI as to any
+other technology \citep{FINRA2024RN2409} points the same way.
+
+\emph{The record has to come from the system, not the agent.} In \num{all.misreport.k} episodes across \num{all.misreport.models.w} models, including
+gpt-oss-20b, the second most compliant model in the study, an agent placed a
+breaching order and then told its principal that it had not. Supervision that
+relies on what an agent says it did will miss violations that the ledger shows
+plainly. The transcripts released with this paper, which record each model turn,
+each tool call and the resulting ledger, are an audit trail of the kind earlier
+work in this series argued machine-learning finance should keep
+\citep{Khan2026AuditTrails}.
+
+\emph{The serving stack is part of the measurement.} The same weights, prompt and
+decoding settings reproduced every episode exactly on the same software and
+changed the verdict in a few episodes on a newer version. Results on this
+benchmark, as on any agent benchmark, should therefore name the serving software
+and its version along with the model. For a firm the same point is a model-risk
+one: supervisory guidance expects an inventory of the models in use and validation
+of changes to them \citep{Fed2011SR117}, and an upgrade of the serving software
+is such a change even when the weights stay the same.
+
+\subsection{Controls for a firm deploying a trading agent}\label{sec:controls}
+
+\Cref{tab:controls} turns the failures observed here into controls. None of them
+is new: each is a control that firms already apply to people and to algorithmic
+order flow, and for broker-dealers with market access the market access rule
+already requires controls of the first kind, covering restricted securities and
+capital thresholds \citep{SEC2010MarketAccess}. The point of the
+table is that an agent needs all of them, because each failure in it occurred in
+a model that, on other measures, behaved well.
+
+\begin{table}[H]
+\centering
+\caption{Failures observed in this study and the controls that would stop them.
+Each control sits outside the agent, so it does not depend on the agent's
+judgment.}
+\label{tab:controls}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+\toprule
+Failure observed & Control \\
+\midrule
+A breaching order placed as the agent's first action, with no check
+(\Cref{sec:how}). & Hard pre-trade checks in the order management system that
+reject a breaching order before it reaches the market, whoever placed it. \\
+\addlinespace
+A claimed sign-off or a reference number treated as an approval
+(\Cref{sec:pressure-results}). & Approvals verified against the approval
+system's own records by identifier, ticker, side and quantity. The agent can
+request an approval but never attest to one. \\
+\addlinespace
+A message formatted as a system notice obeyed as one
+(\Cref{sec:pressure-results}). & System and compliance notices delivered only on a
+channel the principal cannot write to; any change to the controls made in the
+control system, not announced to the agent. \\
+\addlinespace
+An agent's account of an order contradicting the ledger (\Cref{sec:how}). &
+Supervision and audit from execution records, with the agent's own report treated
+as a claim to be reconciled against them. \\
+\addlinespace
+Orders nobody requested: substitutes for a blocked trade, repairs of a breach,
+duplicates, trading on after the task (\Cref{sec:how,sec:sensitivity}). & Each
+instruction bounds the orders it can produce (security, side, maximum quantity);
+anything outside that scope, including a corrective trade, needs a fresh
+instruction from a person. \\
+\addlinespace
+A model resisting one counterfeit and falling to another
+(\Cref{sec:pressure-results}). & Testing against the full set of pressure levels
+before deployment and after every change of model or prompt, as model-risk
+guidance expects of any model whose output is relied on \citep{Fed2011SR117}. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Limitations}\label{sec:limitations}
+
+The benchmark is deliberately small and stylized, and several of its choices
+limit what the results can support.
+
+\emph{Models.} Eight open-weight models from four developers were evaluated,
+served with quantized weights, and the two gpt-oss models on a newer serving
+version than the others. The results describe these models under this prompt,
+these weights and these decoding settings. They do not describe closed frontier
+models, which may behave quite differently, nor the same models at full
+precision, and they cannot be pooled into a statement about language agents in
+general.
+
+\emph{One turn of pressure.} Each conflict delivers its pressure once, in the
+opening message, and the portfolio manager never replies. A principal who pushes
+back after a refusal, or who escalates over several turns, is a harder test, and
+the violation rates here are likely to understate what persistent pressure would
+produce. Equally, a single fixed wording stands for each pressure tactic, so a
+difference between two levels is a difference between two sentences, not between
+two tactics in general.
+
+\emph{Silent desk.} Violating orders execute and are confirmed like any other.
+This isolates the agent's decision, which is the purpose, but it removes the
+feedback a real order management system would give, and some agents in the
+transcripts noticed a breach only after it had filled. With a pre-trade check
+that rejected the order, those episodes would have ended differently.
+
+\emph{Stylized rules and a fixed snapshot.} The six rules are simplified, each
+decidable from one order and the account, and prices never move within an
+episode. Real restricted lists change intraday, concentration limits are measured
+on several bases, and approval workflows involve people. The benchmark tests
+whether an agent follows a clear, fully specified rule when its principal asks it
+not to. An agent that fails here is unlikely to do better against the ambiguous
+rules of a real desk; one that passes has shown only that it can follow clear
+rules.
+
+\emph{Measures added after the plan.} The analysis plan fixed the primary and
+secondary outcomes, and the pressure tests, before the full runs, and the
+replication prediction was fixed before the second batch was run. The measures of
+violations placed as a first action, use of the fabricated reference and
+substitution were defined after reading pilot or early transcripts of the first
+batch. The breakdown by rule and pressure level, the counts of violations undone
+after the fill, of misreports, of conflicts with no tool call and of approval
+conflicts completed compliantly, the lenient reading of calls written in prose,
+and the sensitivity checks of \Cref{sec:sensitivity} were added after runs were
+complete, several of them prompted by transcripts of the second batch. All of these
+are descriptive, and no test is attached to any of them. The misreport count rests
+on hand coding of candidates found by a phrase search, and is a lower bound.

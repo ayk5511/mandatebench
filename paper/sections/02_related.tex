@@ -1,0 +1,94 @@
+\section{Related work}\label{sec:related}
+
+\paragraph{Rule following and policy-following agents.} RuLES found that almost
+all the chat models it tested struggle to keep simple rules stated in their
+instructions while interacting with a user, even on straightforward test cases,
+and decided each violation with a programmatic evaluation function rather than
+human review \citep{Mu2023RuLES}. Two agent benchmarks carried the idea into tool use.
+$\tau$-bench gives an agent domain tools and written policy guidelines in retail
+and airline customer service, simulates the user with a language model, and
+scores the final database state against an annotated goal \citep{Yao2025TauBench}.
+ST-WebAgentBench pairs 222 web tasks with explicit policies and introduces
+Completion Under Policy, which credits a task only if it was completed without
+breaching any applicable policy \citep{Levy2026STWebAgentBench}. We follow all
+three in deciding violations mechanically, and we adopt the principle that
+completion and compliance must be scored together, reporting them as separate
+outcomes so that an agent's position on the trade-off between them is visible.
+
+\paragraph{Finance agents and compliance.} Language-model trading agents are an
+active line of work: FinMem gives a single trading agent a layered memory and a
+configurable character \citep{Yu2024FinMem}, and TradingAgents organizes several
+agents into the roles of a trading firm, including a risk-management team
+\citep{Xiao2024TradingAgents}. Both are judged on trading performance. Whether
+such an agent keeps a firm's rules is a separate question, and the closest work on
+it is ReguSim \citep{Luo2026ReguSim}, a financial-compliance environment in which
+trading agents act under executable market rules (price bands, resale
+restrictions, short-sale permission and exposure caps), paired with a benchmark
+for surveillance monitors. Its pressure comes from the objectives and personas
+the experimenters assign, such as maximizing profit; visible rules reduce
+rejected orders without eliminating them. Its false-rejection measure concerns
+monitors that wrongly flag accepted orders, not trading agents that decline
+legitimate work. It evaluates hosted models and notes that live reruns may not
+reproduce archived outputs. The present benchmark differs on five counts: the
+pressure comes from the agent's own principal, who asks for a specific breaching
+trade; the pressure includes social-engineering moves such as claimed approvals
+and forged system notices; legitimate requests are scored alongside conflicts,
+so over-refusal is measured; the rules are firm-level compliance controls rather
+than exchange microstructure rules; and every model is open-weight and served
+locally, so every result can be rerun from the same weights.
+
+Business Arena places agents in a long-horizon marketplace where regulatory
+obligations must be met before trading \citep{Pan2026BusinessArena}.
+FinSafetyBench tests whether chat models refuse requests that would breach
+financial-compliance norms, across fourteen subcategories drawn from real
+financial crime cases \citep{Hou2026FinSafetyBench}. As its abstract describes
+it, the benchmark measures whether models refuse harmful requests, under
+adversarial attack settings; it does not report refusal of legitimate ones. A
+memory-controlled trading benchmark masks tickers and dates so that recalled
+market history cannot stand in for reasoning \citep{Zhu2026KnowingDoing}, the
+same concern that leads us to invent the universe.
+
+\paragraph{Harmful requests, refusal and pressure.} AgentHarm measures whether
+agents refuse explicitly malicious multi-step tasks
+\citep{Andriushchenko2025AgentHarm}, and ToolEmu emulates high-stakes tools with a
+language model and judges the resulting risks with another
+\citep{Ruan2024ToolEmu}; its authors found by human review that about two-thirds
+of the failures it flags would be real, which is one reason the present
+benchmark grades with a rule engine instead. XSTest documented exaggerated
+safety, in which models decline clearly benign prompts that superficially
+resemble unsafe ones \citep{Rottger2024XSTest}, the failure our legitimate
+scenarios are built to detect. The social pressure levels draw on documented
+weaknesses: assistants tend to defer to a user's stated views
+\citep{Sharma2023Sycophancy}, which the authority and stale-rule levels test, and
+persuasion techniques taken from social science raise the rate at which models
+can be talked out of their safety training \citep{Zeng2024Persuasion}.
+
+\paragraph{Injected instructions and the instruction hierarchy.} Instructions
+injected into text an application processes can override its intended behavior
+\citep{Greshake2023Injection}. For agents, InjecAgent and AgentDojo measure
+injections that arrive through tool outputs, such as an email or a web page the agent reads, and find that current agents can be hijacked this way
+\citep{Zhan2024InjecAgent,Debenedetti2024AgentDojo}. One proposed remedy is an
+instruction hierarchy, in which a model is trained to give system instructions
+priority over user messages and user messages priority over third-party text, and
+to ignore lower-privileged instructions that conflict with higher ones
+\citep{Wallace2024InstructionHierarchy}. The two counterfeit-authorization levels
+here test that hierarchy from the inside. Neither comes from a third party: the
+claimed approval is the principal asserting, in an ordinary user message, that an
+authority above the agent has already spoken, and the forged notice is a user
+message formatted to look like a system message. A model that keeps the
+hierarchy should give either one no more weight than any other user request.
+
+\paragraph{Regulatory context.} Broker-dealers with market access must already
+maintain pre-trade controls that prevent the entry of orders exceeding pre-set
+credit or capital thresholds and orders in securities the firm or customer is
+restricted from trading, under the firm's direct and exclusive control
+\citep{SEC2010MarketAccess}. FINRA has reminded its members that its rules apply
+to generative AI tools just as they apply to any other technology a firm uses
+\citep{FINRA2024RN2409}, and supervisory guidance on model risk management
+expects models to be validated and their limitations understood before their
+outputs are relied on \citep{Fed2011SR117}. A firm that lets an agent place
+orders therefore remains responsible for the agent's breaches. Earlier work in
+this series surveyed audit-trail practice in published machine-learning finance
+research \citep{Khan2026AuditTrails} and mapped model-risk regulation across
+jurisdictions \citep{Khan2026Crosswalk}; this paper moves from the model to the
+agent that acts on its outputs.

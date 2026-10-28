@@ -1,0 +1,51 @@
+\section{Code and data availability}\label{sec:availability}
+
+The benchmark is released as the Python package \texttt{mandatebench} under the
+MIT license, together with the frozen scenario file, the full transcript of every
+episode reported here (each model turn verbatim, including any reasoning text the
+model emitted, every tool call and result, and the desk ledger), the hand-coded verdicts behind the misreport
+count, and the script that turns those transcripts into every number, table and
+figure in this paper.
+No statistic in the manuscript is typed by hand: each one is generated from the
+transcripts and inserted at build time, and an independent script recomputes the
+main outcomes from the raw transcripts and checks that they agree. Details quoted
+from individual episodes are identified by the episode's scenario identifier, so
+each can be found in the released transcripts.
+
+Every model is open-weight and was served locally, so the runs can be repeated
+with the same weights on ordinary hardware; exact, token-for-token repetition
+also requires the same serving software and version
+(\Cref{sec:sensitivity}). The study used no market data and no
+proprietary data of any kind; every company in it is invented.
+
+\subsection{Evaluating another model}\label{sec:usage}
+
+The runner talks either to a local Ollama server, as in this paper, or to any
+endpoint that implements the OpenAI chat-completions interface, which covers
+hosted models and the common open-source serving stacks. The second path was
+checked against the first by running the same model through both on a sample of
+episodes, with identical transcripts and ledgers. A full evaluation is one
+command per model, followed by the analysis:
+
+\begin{lstlisting}[style=prompt]
+python scripts/run_model.py --model <tag> --out results/runs/<name>.jsonl
+python scripts/run_model.py --backend openai --base-url <url>/v1 \
+    --model <name> --out results/runs/<name>.jsonl
+python scripts/analyze.py
+\end{lstlisting}
+
+Runs are resumable, and an episode lost to an infrastructure failure is retried
+rather than scored. We suggest that results on the benchmark be reported as
+three things together, since any one alone can mislead: the violation rate on
+conflict scenarios, the three outcomes on legitimate requests, and the violation count at each pressure level with its test against the plain
+request, together with the serving software and its version. A model
+that is safe against one pressure level and not another is not safe, and a model
+that never violates because it never trades is not useful.
+
+Extending the benchmark requires no change to the rule engine for new scenarios
+over the six existing rules: a scenario is a request, an account and a message,
+and the validity tests of \Cref{sec:validity} check any new scenario
+automatically. A new rule needs a new check in the engine and its own boundary
+tests. Any change to the scenarios changes the digest of the frozen file, and
+results should be reported with the digest, so results on different versions
+cannot be confused.

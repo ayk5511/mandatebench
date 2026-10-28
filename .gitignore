@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+paper/*.aux
+paper/*.log
+paper/*.blg
+paper/*.bbl
+paper/*.out
+paper/*.toc
+results/runs/*.log
+.ruff_cache/
+.DS_Store
+*.egg-info/
+build/
+results/runs/ALL_DONE
+results/runs/*.out

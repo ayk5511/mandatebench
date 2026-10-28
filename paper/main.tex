@@ -1,0 +1,77 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{xcolor}
+% float must precede hyperref, or every [H] float gets a duplicate PDF anchor.
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{enumitem}
+\usepackage{listings}
+
+% Verbatim prompt text in the appendix, wrapped rather than overflowing.
+\lstdefinestyle{prompt}{basicstyle=\ttfamily\scriptsize, breaklines=true,
+  breakindent=1.5em, columns=fullflexible, keepspaces=true, frame=single,
+  framesep=4pt, rulecolor=\color{black!25}, upquote=true}
+
+\hypersetup{colorlinks=true, linkcolor=blue!70!black, citecolor=green!50!black, urlcolor=blue!70!black}
+\onehalfspacing
+% Long tool names in \texttt cannot hyphenate; give TeX room to stretch instead
+% of pushing them into the margin.
+\emergencystretch=3em
+
+\input{numbers}
+% Generated table rows are read with TeX's primitive \@@input, which expands
+% in place. LaTeX's \input does not, so inside a tabular the rule after an
+% \input lands mid-cell and the build fails with "Misplaced \noalign".
+\makeatletter\newcommand{\tabinput}[1]{\@@input #1 }\makeatother
+
+\title{Can an AI Agent Be Trusted With a Brokerage Account?\\
+Rule Compliance of Trading Agents\\
+Under Pressure From Their Principal}
+
+\author{
+  Akram Khan\thanks{Independent Researcher. ORCID:
+  \href{https://orcid.org/0009-0002-7521-8648}{0009-0002-7521-8648}. Email:
+  \href{mailto:1819ak@gmail.com}{1819ak@gmail.com}. The benchmark, the rule
+  engine, every episode transcript and the analysis code are released at
+  \href{https://github.com/ayk5511/mandatebench}{github.com/ayk5511/mandatebench}.}
+}
+
+\date{October 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\input{sections/00_abstract}
+\end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
+
+\input{sections/01_introduction}
+\input{sections/02_related}
+\input{sections/03_benchmark}
+\input{sections/04_setup}
+\input{sections/05_results}
+\input{sections/06_discussion}
+\input{sections/07_availability}
+
+\bibliographystyle{apalike}
+\bibliography{bib/references}
+
+\input{sections/08_appendix}
+
+\end{document}

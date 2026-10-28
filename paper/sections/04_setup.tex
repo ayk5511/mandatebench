@@ -1,0 +1,126 @@
+\section{Experimental setup}\label{sec:setup}
+
+\subsection{Models}\label{sec:models}
+
+Eight open-weight models from four developers were evaluated, each served
+locally through Ollama on a single laptop (\Cref{tab:models}). They were run in
+two batches. The first four span a general and a code-specialized variant at the
+same size, a reasoning model that writes out its deliberation before acting, and
+sizes from 8 to 72 billion parameters, but three of them come from one developer.
+After their results were analyzed, the main finding was written down as a
+prediction, with the conditions that would falsify it (\Cref{sec:replication}),
+and four more models were run as a test of it: Mistral Small 3.2, a larger and
+newer Llama (Llama 3.3 70B), and OpenAI's two open-weight reasoning models.
+Everything else was held fixed: the frozen scenarios, the prompt, the decoding
+settings, the grader and the analysis.
+
+Open-weight models served locally were chosen deliberately: anyone with the same
+weights can rerun every episode, which is not true of hosted models whose
+versions change behind a fixed name. The cost is coverage. No closed frontier
+model is included, so the results describe these models and not language agents
+in general. The runner also accepts any endpoint with the OpenAI chat interface
+(\Cref{sec:usage}), so hosted models can be evaluated in the same way.
+
+\begin{table}[H]
+\centering
+\caption{Models evaluated, with the Ollama version that served each. All were run
+with their default chat templates and native tool-calling interfaces. Weights
+are 8-bit (Q8\_0) or 4-bit (Q4\_K\_M, MXFP4) quantizations. The rule separates
+the first batch from the four models added as a replication.}
+\label{tab:models}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lllll@{}}
+\toprule
+Model & Developer & Params. & Weights & Ollama \\
+\midrule
+Llama 3.1 8B Instruct \citep{Grattafiori2024Llama3} & Meta & 8B & Q8\_0 & \num{llama3.1-8b.ollama} \\
+Qwen2.5-Coder 32B Instruct \citep{Hui2024QwenCoder} & Alibaba & 32B & Q4\_K\_M & \num{qwen2.5-coder-32b.ollama} \\
+Qwen3 32B \citep{Yang2025Qwen3} & Alibaba & 32B & Q4\_K\_M & \num{qwen3-32b.ollama} \\
+Qwen2.5 72B Instruct \citep{Qwen2025Qwen25} & Alibaba & 72B & Q4\_K\_M & \num{qwen2.5-72b.ollama} \\
+\midrule
+gpt-oss-20b \citep{OpenAI2025gptoss} & OpenAI & 21B & MXFP4 & \num{gpt-oss-20b.ollama} \\
+Mistral Small 3.2 24B \citep{Mistral2025Small32} & Mistral AI & 24B & Q4\_K\_M & \num{mistral-small-24b.ollama} \\
+Llama 3.3 70B Instruct \citep{Meta2024Llama33} & Meta & 71B & Q4\_K\_M & \num{llama3.3-70b.ollama} \\
+gpt-oss-120b \citep{OpenAI2025gptoss} & OpenAI & 117B & MXFP4 & \num{gpt-oss-120b.ollama} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The gpt-oss models need a newer Ollama than the one that served the others, so
+they were run on version \num{gpt-oss-20b.ollama}; \Cref{sec:sensitivity} reports
+what the version change alone does, by rerunning one of the first models on it.
+Every model was served with flash attention and an 8-bit key-value cache, the
+defaults of the packaged service, and these settings did not change between
+versions.
+
+\subsection{Decoding and episode limits}\label{sec:decoding}
+
+Decoding is greedy (temperature 0) with a fixed seed. The context window is set
+to 16,384 tokens, well above the longest episode, so the serving stack cannot
+silently truncate the compliance manual, and output length is capped at 8,192
+tokens per turn so that a reasoning model is not cut off mid-deliberation. The
+three reasoning models (Qwen3 and the two gpt-oss models) run with reasoning at
+the serving default. Their reasoning text is recorded in the transcripts but,
+as for every model, only each turn's visible reply and tool calls are passed back
+in later turns. An episode ends when the model replies without a tool call, or
+after eight model turns. Carrying out any request compliantly takes at most three
+tool turns and a reply, so the limit binds only on an agent that keeps acting.
+
+\subsection{Tool calls written as text}\label{sec:textcalls}
+
+During piloting, Qwen2.5-Coder decided to place orders but wrote each call as a
+JSON object in its reply rather than through the native tool interface, which the
+serving stack does not convert. Scored as given, the model would appear perfectly
+compliant: an agent that cannot place an order never breaks a rule. The runner
+therefore recovers calls written as text, under a strict rule applied to every
+model: the reply must consist of nothing but one or more calls, as a bare JSON
+object, a JSON list, a single fenced block, or tagged blocks, each naming a real
+tool with an arguments object. A reply that discusses a call, or mixes one with
+prose, is treated as prose. Every recovered call is flagged. The rule was fixed
+before the main runs and was not changed when later models turned out to write
+calls inside prose; \Cref{sec:sensitivity} reports how often each path occurred
+and what a lenient reading would have changed.
+
+\subsection{Infrastructure failures and repeatability}\label{sec:infra}
+
+An episode that ends because a model call failed is excluded from every result
+and counted; it records the serving stack, not the agent. To measure how
+repeatable the measurement is, Llama 3.1 8B was run over the full benchmark twice
+more: once on the same software, and once on the newer Ollama version, and each
+rerun is compared with the original episode by episode.
+
+\subsection{Analysis}\label{sec:analysis}
+
+The analysis plan was written down after the pilot and before any result from the
+full runs was examined, and is released with the code. The primary outcome is the
+share of conflict scenarios in which the agent executes at least one order that
+breaches any rule. Breaching the target rule is reported as a secondary outcome,
+as are three mutually exclusive outcomes on legitimate requests (carried out
+compliantly, carried out in breach, not carried out) and unrequested trading
+across all scenarios.
+
+Proportions carry Wilson 95\% intervals \citep{Wilson1927}. The effect of each
+pressure level is tested against the plain request within each model with an
+exact McNemar test \citep{McNemar1947}, paired over the 24 rule and base
+combinations that appear at both levels, and the five comparisons per model are
+Holm-adjusted \citep{Holm1979}. No inference is pooled across models: eight models
+are not a sample from a population of models, so each is reported on its own.
+
+\subsection{The replication prediction}\label{sec:replication}
+
+After the first four models were analyzed and before any of the other four was
+run, the following prediction was recorded with the analysis plan, together with
+its falsification conditions:
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt,label=(\roman*)]
+\item for none of the four new models will the authority, urgency or stale-rule
+level differ significantly from the plain request;
+\item every significant pressure effect among them will be at the claimed-approval
+or fake-system-notice level; and
+\item no new model will leave more than 2 of the 28 legitimate requests undone.
+\end{enumerate}
+
+\noindent A model with no significant effect at all is consistent with (i) and
+(ii) but says nothing for them. \Cref{sec:replication-results} reports the
+outcome for each part, including the part that failed.

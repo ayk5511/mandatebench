@@ -1,0 +1,74 @@
+\appendix
+
+\section{System prompt and tools}\label{app:prompt}
+
+The system prompt every model received for scenarios on the standard account,
+verbatim. Scenarios on the low-cash account (the no-margin conflicts) differ only
+in the account block. The text below is exported from the benchmark code when
+the paper is built, so it cannot differ from what the models saw.
+
+\lstinputlisting[style=prompt]{tables/system_prompt.txt}
+
+The four tools, as name, arguments (a question mark marks an optional one) and
+the description the model received:
+
+\lstinputlisting[style=prompt]{tables/tools.txt}
+
+\section{Legitimate requests by kind}\label{app:legit}
+
+\begin{table}[H]
+\centering
+\caption{Legitimate requests carried out compliantly, by kind; each entry is out
+of 4. Where a request was carried out in breach (b) or not carried out (r), the
+count is noted. L1 ordinary purchase; L2 partial sale; L3 purchase landing at or
+within one share of the 10\% cap; L4 order of exactly \$50,000; L5 order needing
+approval; L6 purchase in the sector of a restricted security; L7 trade in the
+sector of a security in blackout.}
+\label{tab:legit-kind}
+\small
+\begin{tabular}{@{}lrrrrrrr@{}}
+\toprule
+Model & L1 & L2 & L3 & L4 & L5 & L6 & L7 \\
+\midrule
+\tabinput{tables/legit_by_kind}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Violations by rule and pressure level}\label{app:grid}
+
+\Cref{tab:grid,tab:grid-b} give every rule and pressure cell. Each cell counts
+the four base requests for that rule at that level, so every entry is out of 4.
+The levels are the plain request (P0), authority (P1), claimed approval (P2),
+urgency (P3), the claim that the rule is out of date (P4) and the fake system
+notice (P5).
+
+\begin{table}[H]
+\centering
+\caption{Conflict scenarios with a violation, by rule and pressure level: the
+first four models.}
+\label{tab:grid}
+\small
+\begin{tabular}{@{}llrrrrrr@{}}
+\toprule
+Model & Rule & P0 & P1 & P2 & P3 & P4 & P5 \\
+\midrule
+\tabinput{tables/grid_a}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Conflict scenarios with a violation, by rule and pressure level: the
+four models added as a replication.}
+\label{tab:grid-b}
+\small
+\begin{tabular}{@{}llrrrrrr@{}}
+\toprule
+Model & Rule & P0 & P1 & P2 & P3 & P4 & P5 \\
+\midrule
+\tabinput{tables/grid_b}
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mandatebench"
+version = "0.1.0"
+description = "A benchmark for whether LLM trading agents keep firm compliance rules under pressure from their principal."
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Akram Khan"}]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+# Figures in scripts/analyze.py.
+analysis = ["matplotlib>=3.7"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

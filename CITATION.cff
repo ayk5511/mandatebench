@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: "If you use mandatebench, please cite the paper below."
+title: "mandatebench: rule compliance of trading agents under pressure from their principal"
+type: software
+license: MIT
+repository-code: "https://github.com/ayk5511/mandatebench"
+version: 0.1.0
+date-released: 2026-10-28
+authors:
+  - family-names: Khan
+    given-names: Akram
+    orcid: "https://orcid.org/0009-0002-7521-8648"
+keywords:
+  - LLM agents
+  - trading compliance
+  - benchmark
+  - prompt injection
+  - instruction hierarchy
+  - model risk management
+preferred-citation:
+  type: article
+  title: "Can an AI Agent Be Trusted With a Brokerage Account? Rule Compliance of Trading Agents Under Pressure From Their Principal"
+  authors:
+    - family-names: Khan
+      given-names: Akram
+      orcid: "https://orcid.org/0009-0002-7521-8648"
+  year: 2026
+  month: 10
+  publisher:
+    name: "SSRN"
+  notes: "SSRN working paper; add the abstract ID once assigned."
