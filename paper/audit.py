@@ -169,6 +169,78 @@ def audit_secondary(stem: str, m: dict) -> None:
     check(undo == m["explore_undo"], f"{stem}: violations undone after the fill {undo}")
 
 
+# ---------------------------------------------------------------- 1b. statistics
+def audit_statistics() -> None:
+    """Rebuild the paired verdicts from the transcripts and recompute every test
+    and interval with SciPy and statsmodels, not with mandatebench.stats."""
+    print("\n=== STATISTICS RECOMPUTED WITH SCIPY AND STATSMODELS ===")
+    from scipy.stats import binomtest
+    from statsmodels.stats.multitest import multipletests
+    from statsmodels.stats.proportion import proportion_confint
+
+    summary = json.loads((ROOT / "results" / "summary.json").read_text())
+    levels = ["P1_authority", "P2_claimed_approval", "P3_urgency", "P4_rule_is_stale", "P5_fake_system_notice"]
+    worst_p = worst_ci = 0.0
+    for stem, m in summary["models"].items():
+        cell: dict[str, dict] = {}
+        for line in (ROOT / "results" / "runs" / f"{stem}.jsonl").open():
+            ep = json.loads(line)
+            sc = ep["scenario"]
+            if sc["family"] != "conflict" or ep["ended"] == "harness_error":
+                continue
+            v = any(e["kind"] == "order" and e["violations"] for e in ep["ledger"])
+            cell.setdefault(sc["pressure"], {})[(sc["target"], sc["base"])] = v
+        raw = []
+        for p in levels:
+            up = sum(cell[p][k] and not cell["P0_plain"][k] for k in cell[p])
+            down = sum(cell["P0_plain"][k] and not cell[p][k] for k in cell[p])
+            raw.append(binomtest(up, up + down, 0.5).pvalue if up + down else 1.0)
+            worst_p = max(worst_p, abs(raw[-1] - m["by_pressure"][p].get("p_raw", raw[-1])))
+        for p, adj in zip(levels, multipletests(raw, method="holm")[1]):
+            worst_p = max(worst_p, abs(adj - m["by_pressure"][p]["p_holm"]))
+        k, n = m["conflict"]["violated"], m["conflict"]["n"]
+        lo, hi = proportion_confint(k, n, method="wilson")
+        from mandatebench.stats import wilson
+        mlo, mhi = wilson(k, n)
+        worst_ci = max(worst_ci, abs(lo - mlo), abs(hi - mhi))
+    check(worst_p < 1e-9, f"exact McNemar and Holm p-values match SciPy/statsmodels (max diff {worst_p:.1e})")
+    check(worst_ci < 1e-9, f"Wilson intervals match statsmodels (max diff {worst_ci:.1e})")
+
+
+# ---------------------------------------------------------------- 1c. replay
+def audit_replay() -> None:
+    print("\n=== INDEPENDENT REPLAY OF EVERY TOOL CALL ===")
+    sys.path.insert(0, str(ROOT / "paper"))
+    import replay
+    n = bad = 0
+    for f in sorted((ROOT / "results" / "runs").glob("*.jsonl")):
+        for line in f.open():
+            ep = json.loads(line)
+            if ep["ended"] == "harness_error":
+                continue
+            n += 1
+            bad += bool(replay.replay_episode(ep))
+    check(bad == 0, f"rule engine agrees with an independent re-implementation on {n} episodes ({bad} disagree)")
+
+    # Scenario validity, checked with the re-implementation: each conflict
+    # request placed literally on a fresh account breaches exactly its target;
+    # each legitimate request breaches nothing, except that large ones breach
+    # only the approval rule when placed without approval.
+    wrong = []
+    for line in (ROOT / "scenarios" / "scenarios_v1.jsonl").open():
+        sc = json.loads(line)
+        r = replay.Replay(sc["account"])
+        r.place_order(dict(sc["request"]))
+        got = r.ledger[-1]["rules"]
+        if sc["family"] == "conflict":
+            ok = got == {sc["target"]}
+        else:
+            ok = got <= {"APPROVAL"} and (not got or sc["kind"] == "L5_needs_approval")
+        if not ok:
+            wrong.append((sc["id"], sorted(got)))
+    check(not wrong, f"every scenario breaches exactly what it was built to breach {wrong[:3] or ''}")
+
+
 # ---------------------------------------------------------------- 2. references
 def audit_references(tex: str) -> None:
     print("\n=== NUMBERS AND CITATIONS ===")
@@ -239,6 +311,8 @@ def audit_style(tex: str) -> None:
 def main() -> int:
     tex = tex_sources()
     audit_outcomes()
+    audit_statistics()
+    audit_replay()
     audit_references(tex)
     audit_facts(tex)
     audit_style(tex)

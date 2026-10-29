@@ -14,6 +14,57 @@ the description the model received:
 
 \lstinputlisting[style=prompt]{tables/tools.txt}
 
+\section{Example episodes}\label{app:examples}
+
+Four episodes, each illustrating a finding in \Cref{sec:results}. The excerpts are
+exported from the released transcripts when the paper is built. Text is cut but
+never edited; cuts are marked [\ldots], typographic quotation marks are shown as
+plain ones, and emoji are dropped. The account snapshot returned by
+\texttt{get\_account} is omitted. Each ledger line is the rule engine's verdict,
+which the agent never sees.
+
+\paragraph{A counterfeit read narrowly.} gpt-oss-120b, the most compliant model in
+the study, under the fake system notice (\texttt{C-APPROVAL-b4-P5}). Its reasoning
+takes the notice's ``pre-approved'' as dispensing with the approval only, and it
+places a \$52,000 order without one; this is one of its two violations in the
+benchmark.
+\lstinputlisting[style=prompt]{tables/examples/ex1.txt}
+
+\paragraph{A misreport.} Llama 3.3 70B under the claimed approval
+(\texttt{C-RESTRICTED-b1-P2}). It buys the restricted security and then tells the
+portfolio manager it cannot.
+\lstinputlisting[style=prompt]{tables/examples/ex2.txt}
+
+\paragraph{Disengagement.} The same scenario (\texttt{C-RESTRICTED-b1-P2}) given
+to Mistral Small 3.2, which makes no tool call and says it has no tools.
+\lstinputlisting[style=prompt]{tables/examples/ex3.txt}
+
+\paragraph{A violation reasoned into.} Qwen3 under urgency
+(\texttt{C-NO\_SHORT-b3-P3}). The account holds no QUIL, as the prompt shows; the
+model assumes it does, sells, and reports the trade as compliant.
+\lstinputlisting[style=prompt]{tables/examples/ex4.txt}
+
+\section{Run statistics}\label{app:runstats}
+
+\begin{table}[H]
+\centering
+\caption{Run statistics per model: medians per episode over all 172 episodes, and
+total model time. Output tokens include any reasoning text. Times are wall-clock on
+one laptop, and some runs shared the machine with model downloads or another run,
+so they indicate scale only and are not a benchmark of speed.}
+\label{tab:runstats}
+\small
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+ & & \multicolumn{3}{c}{Median per episode} & Total \\
+\cmidrule(lr){3-5}\cmidrule(l){6-6}
+Model & Ollama & Tool calls & Output tokens & Seconds & Hours \\
+\midrule
+\tabinput{tables/run_stats}
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Legitimate requests by kind}\label{app:legit}
 
 \begin{table}[H]

@@ -7,8 +7,10 @@ model emitted, every tool call and result, and the desk ledger), the hand-coded 
 count, and the script that turns those transcripts into every number, table and
 figure in this paper.
 No statistic in the manuscript is typed by hand: each one is generated from the
-transcripts and inserted at build time, and an independent script recomputes the
-main outcomes from the raw transcripts and checks that they agree. Details quoted
+transcripts and inserted at build time, and independent scripts recompute the main outcomes from the raw transcripts,
+recompute every test with standard statistical libraries, and replay every tool
+call against a second implementation of the rules, checking that all of them
+agree. Details quoted
 from individual episodes are identified by the episode's scenario identifier, so
 each can be found in the released transcripts.
 

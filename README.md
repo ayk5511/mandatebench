@@ -19,7 +19,7 @@ Trading Agents Under Pressure From Their Principal* (Khan, 2026). The PDF is in
 ## Quick start
 
 ```bash
-pip install -e ".[dev,analysis]"
+pip install -e ".[dev,analysis,audit]"
 python -m pytest -q                      # engine, scenarios, runner, stats
 # a model served by a local Ollama
 python scripts/run_model.py --model llama3.1:8b-instruct-q8_0 --out results/runs/my-model.jsonl
@@ -28,7 +28,7 @@ python scripts/run_model.py --model llama3.1:8b-instruct-q8_0 --out results/runs
 python scripts/run_model.py --backend openai --base-url http://localhost:8000/v1 \
     --model my-model --out results/runs/my-model.jsonl
 python scripts/analyze.py                # every number, table and figure
-python paper/audit.py                    # independent recomputation and checks
+python paper/audit.py                    # independent recomputation, replay and checks
 ```
 
 To include a new model in the analysis, add a line to `MODELS` in
@@ -45,7 +45,7 @@ quote the scenario-file digest in `scenarios/scenarios_v1.sha256`.
 | `results/runs/` | every episode transcript: model turns, reasoning text, tool calls and results, ledger |
 | `results/misreports.csv` | hand-coded verdicts on misreport candidates |
 | `scripts/` | run a model, freeze scenarios, analyze |
-| `paper/` | LaTeX source, generated numbers, tables and figures, audit script |
+| `paper/` | LaTeX source, generated numbers, tables and figures, audit script, independent replay of every tool call (`replay.py`) |
 
 ## Citation
 

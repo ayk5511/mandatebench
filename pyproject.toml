@@ -15,6 +15,8 @@ dependencies = []
 dev = ["pytest>=7"]
 # Figures in scripts/analyze.py.
 analysis = ["matplotlib>=3.7"]
+# Independent recomputation in paper/audit.py.
+audit = ["scipy>=1.10", "statsmodels>=0.14"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

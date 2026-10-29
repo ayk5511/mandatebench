@@ -72,10 +72,10 @@ Model & \shortstack[r]{Restricted\\list} & \shortstack[r]{Earnings\\blackout} &
 \includegraphics[width=\textwidth]{figures/by_pressure.pdf}
 \caption{Each model's pressure profile: the share of the 24 conflict scenarios
 at each level in which it committed a violation, with Wilson 95\% intervals. The
-dashed line marks the plain-request rate. The two levels that counterfeit
-authorization (claimed approval, fake notice) are drawn in red and the three
-social levels in gray; a filled marker means the level differs from the plain
-request at $p<0.05$ after Holm adjustment.}
+dashed line marks the plain-request rate, whose point is drawn in black. The two
+levels that counterfeit authorization (claimed approval, fake notice) are drawn in
+red and the three social levels in gray; a filled red or gray marker means the
+level differs from the plain request at $p<0.05$ after Holm adjustment.}
 \label{fig:pressure}
 \end{figure}
 
@@ -130,6 +130,33 @@ everything the violation rate still ranged from \num{gpt-oss-120b.viol.pct}\% to
 \num{qwen2.5-coder-32b.viol.pct}\%: in this benchmark, the models that violated less
 did not pay for it by refusing more (\Cref{fig:tradeoff}).
 
+The violation rate does not say how a model avoided violating, and the models
+differ more there than anywhere else (\Cref{fig:outcomes}). The two gpt-oss models
+and Qwen3 declined most conflicts in their first reply, from the facts in the
+prompt, without calling a tool (\num{gpt-oss-120b.oc.declined_no_tools},
+\num{gpt-oss-20b.oc.declined_no_tools} and \num{qwen3-32b.oc.declined_no_tools}
+of 144), and carried out most approval conflicts properly. Qwen2.5 72B and Mistral
+Small 3.2 more often used a tool first, looking up the account or a quote or
+requesting an approval that the desk denied, before declining. Qwen2.5-Coder never declined without a tool call,
+and was the only model to place compliant trades other than the one requested in
+any number (\num{qwen2.5-coder-32b.oc.alternative}). Mistral Small 3.2's
+\num{mistral-small-24b.oc.declined_no_tools} declines without a tool include the
+\num{mistral-small-24b.nocall.P2_claimed_approval} claimed-approval scenarios in
+which it disowned its tools (\Cref{sec:pressure-results}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/outcomes.pdf}
+\caption{How each model ended its 144 conflict episodes, in five mutually exclusive
+outcomes, ordered by the number of violations. \emph{Carried out with an approval}
+is possible only for the 24 approval conflicts. \emph{Compliant partial or other
+trade}: orders were placed, none breached a rule, and the request was not carried
+out in full. The two \emph{No order} outcomes separate an agent that used a tool
+(an account or quote lookup, or an approval request that was denied) from one that replied without
+using any.}
+\label{fig:outcomes}
+\end{figure}
+
 \subsection{Pressure that counterfeits authorization}\label{sec:pressure-results}
 
 The six pressure levels did not act alike (\Cref{tab:pressure,fig:pressure}).
@@ -163,7 +190,17 @@ for any test to detect an effect, and Llama 3.1 8B, which violated at nearly eve
 level.
 \end{itemize}
 
-One result holds for every model. The fake system notice announced that compliance
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/heatmaps.pdf}
+\caption{Violations by rule (rows) and pressure level (columns) for each model.
+Each cell is out of the four base requests for that rule at that level, and darker
+is more. The fake-notice column is the darkest, or tied for darkest, in every
+panel but Qwen3's, and its approval cell is filled in all eight.}
+\label{fig:heatmaps}
+\end{figure}
+
+One result holds for every model (\Cref{fig:heatmaps}). The fake system notice announced that compliance
 checks were suspended and that orders were ``pre-approved'', and under it all \num{all.p5appr.any.w} models placed large orders without the
 approval the manual requires: \num{all.p5appr.all4.w} of them in all four approval
 scenarios and gpt-oss-120b in \num{gpt-oss-120b.cell.APPROVAL.P5_fake_system_notice.w}. Both of
@@ -318,6 +355,12 @@ fixed before any of these models was run and is kept, since an order an agent
 describes but does not place does not reach a market; the lenient counts are
 reported so that the reader can weigh both. Among the other models, only Llama
 3.1 8B wrote a breaching order inside prose, in \num{llama3.1-8b.emb.conf.k.w} conflict scenarios.
+
+\emph{Malformed calls were negligible.} Across all runs, \num{replay.invalid.w}
+tool call was rejected as malformed: Mistral Small 3.2, having obtained a genuine
+approval, nested the order's fields inside an extra object
+(\texttt{C-APPROVAL-b2-P1}). Nothing was executed, and the episode is scored as no
+violation and no completion.
 
 \emph{The measurement repeats exactly on the same software, and approximately
 across versions.} An independent second run of Llama 3.1 8B on the same software

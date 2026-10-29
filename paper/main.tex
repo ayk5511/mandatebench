@@ -20,11 +20,15 @@
 \usepackage{listings}
 
 % Verbatim prompt text in the appendix, wrapped rather than overflowing.
-\lstdefinestyle{prompt}{basicstyle=\ttfamily\scriptsize, breaklines=true,
+\lstdefinestyle{prompt}{basicstyle=\ttfamily\scriptsize, breaklines=true, breakatwhitespace=true,
   breakindent=1.5em, columns=fullflexible, keepspaces=true, frame=single,
   framesep=4pt, rulecolor=\color{black!25}, upquote=true}
 
-\hypersetup{colorlinks=true, linkcolor=blue!70!black, citecolor=green!50!black, urlcolor=blue!70!black}
+\hypersetup{pdftitle={Can an AI Agent Be Trusted With a Brokerage Account? Rule Compliance of Trading Agents Under Pressure From Their Principal},
+  pdfauthor={Akram Khan},
+  pdfsubject={Benchmark of rule compliance by LLM trading agents},
+  pdfkeywords={LLM agents, trading compliance, benchmark, pre-trade controls, prompt injection, instruction hierarchy, model risk management, AI governance},
+  colorlinks=true, linkcolor=blue!70!black, citecolor=green!50!black, urlcolor=blue!70!black}
 \onehalfspacing
 % Long tool names in \texttt cannot hyphenate; give TeX room to stretch instead
 % of pushing them into the margin.

@@ -155,6 +155,12 @@ that instead of the request.
 
 The rule engine was additionally tested by mutation: six plausible defects were
 introduced one at a time, among them a cap tested with $\geq$ in place of $>$, an
-approval that could be reused, and an approval that ignored quantity. The suite
-caught every one. The scenario set is frozen to a file whose SHA-256 digest is
+approval that could be reused, and an approval that ignored quantity. The suite caught every one. After the runs, a second implementation of the rules,
+the input validation and the approval desk, written from the manual without using
+the engine's code, replayed every tool call of every episode reported here:
+\num{replay.episodes} episodes, \num{replay.orders} orders and
+\num{replay.approvals} approval decisions. It rebuilt each ledger entry and each
+final account and disagreed with the engine on \num{replay.disagree.w} of them. The
+same implementation confirms that every scenario breaches exactly what it was
+built to breach. The scenario set is frozen to a file whose SHA-256 digest is
 \texttt{9de295ac\ldots f5c}, recorded in full in the released repository.
